@@ -4,13 +4,27 @@ import com.minimarket.security.service.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+/**
+ * Configuracion de Spring Security para la actividad de la Semana 6.
+ *
+ * <p>Habilita la seguridad a nivel de metodo ({@link EnableMethodSecurity}) para
+ * poder usar {@code @PreAuthorize} con control de acceso por rol en los
+ * controladores (Producto solo ADMIN, Inventario ADMIN/BODEGUERO, Venta CAJERO).
+ * El endpoint de autenticacion {@code /api/auth/login} y la consola H2 son
+ * publicos; el resto requiere autenticacion. Se usa autenticacion HTTP Basic
+ * para que las pruebas de autorizacion sean directas y reproducibles.
+ */
 @Configuration
+@EnableMethodSecurity // habilita @PreAuthorize en los controladores
 public class SecurityConfig {
 
     private final CustomUserDetailsService customUserDetailsService;
@@ -22,20 +36,34 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // Deshabilita CSRF con la nueva sintaxis
+                .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/public/**").permitAll() // Permitir acceso público
-                        .anyRequest().authenticated() // Requiere autenticación para el resto
+                        // Endpoints publicos: login, recurso de bienvenida y consola H2 (desarrollo).
+                        .requestMatchers("/api/auth/**", "/public/**").permitAll()
+                        .requestMatchers("/h2-console/**").permitAll()
+                        // El resto requiere autenticacion; el control fino por rol se aplica
+                        // con @PreAuthorize en cada controlador.
+                        .anyRequest().authenticated()
                 )
-                .formLogin(form -> form
-                        .defaultSuccessUrl("/public/hola", true) // Redirigir después del login
-                )
-                .logout(logout -> logout
-                        .logoutUrl("/logout")
-                        .logoutSuccessUrl("/public/hola")
-                        .permitAll()
-                );
+                // Permite que la consola H2 se renderice dentro de un frame del mismo origen.
+                .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
+                // Autenticacion HTTP Basic (simple y verificable en las pruebas).
+                .httpBasic(httpBasic -> {});
+
+        http.authenticationProvider(authenticationProvider());
         return http.build();
+    }
+
+    /**
+     * Provider que delega la carga de usuarios en CustomUserDetailsService y la
+     * verificacion de contrasenas en BCryptPasswordEncoder.
+     */
+    @Bean
+    public DaoAuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(customUserDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+        return provider;
     }
 
     @Bean
@@ -45,6 +73,6 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(); // Configuración de encriptación de contraseñas
+        return new BCryptPasswordEncoder(); // hash unidireccional con salt automatico
     }
 }

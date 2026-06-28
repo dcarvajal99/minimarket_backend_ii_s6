@@ -11,4 +11,10 @@ public interface UsuarioService {
     Optional<Usuario> findByUsername(String username);
     Usuario save(Usuario usuario);
     void deleteById(Long id);
+
+    /**
+     * Registra un usuario cifrando su contrasena con BCrypt antes de persistir,
+     * para que nunca se almacene en texto plano.
+     */
+    Usuario registrar(Usuario usuario);
 }
