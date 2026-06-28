@@ -1,8 +1,12 @@
 package com.minimarket.config;
 
 import com.minimarket.common.Constantes;
+import com.minimarket.entity.Categoria;
+import com.minimarket.entity.Producto;
 import com.minimarket.entity.Rol;
 import com.minimarket.entity.Usuario;
+import com.minimarket.repository.CategoriaRepository;
+import com.minimarket.repository.ProductoRepository;
 import com.minimarket.repository.RolRepository;
 import com.minimarket.repository.UsuarioRepository;
 import org.slf4j.Logger;
@@ -38,6 +42,8 @@ public class DataLoader {
     @Bean
     public CommandLineRunner initData(RolRepository rolRepository,
                                       UsuarioRepository usuarioRepository,
+                                      CategoriaRepository categoriaRepository,
+                                      ProductoRepository productoRepository,
                                       PasswordEncoder passwordEncoder) {
         return args -> {
             if (usuarioRepository.count() > 0) {
@@ -58,7 +64,19 @@ public class DataLoader {
             crearUsuario(usuarioRepository, passwordEncoder, "cliente", "cliente123",
                     "Clara", "Cliente", "cliente@minimarket.cl", Set.of(cliente));
 
-            log.info("DataLoader: sembrados 4 roles y 4 usuarios con contrasenas cifradas");
+            // Catalogo base de ejemplo (para que las pruebas de endpoints tengan datos).
+            Categoria bebidas = new Categoria();
+            bebidas.setNombre("Bebidas");
+            bebidas = categoriaRepository.save(bebidas);
+
+            Producto agua = new Producto();
+            agua.setNombre("Agua Mineral 1L");
+            agua.setPrecio(990.0);
+            agua.setStock(50);
+            agua.setCategoria(bebidas);
+            productoRepository.save(agua);
+
+            log.info("DataLoader: sembrados 4 roles, 4 usuarios, 1 categoria y 1 producto de ejemplo");
         };
     }
 
