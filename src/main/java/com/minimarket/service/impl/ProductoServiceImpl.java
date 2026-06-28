@@ -1,8 +1,13 @@
 package com.minimarket.service.impl;
 
+import com.minimarket.common.Constantes;
 import com.minimarket.entity.Producto;
+import com.minimarket.exception.RecursoNoEncontradoException;
+import com.minimarket.exception.StockInsuficienteException;
 import com.minimarket.repository.ProductoRepository;
 import com.minimarket.service.ProductoService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,6 +16,8 @@ import java.util.Optional;
 
 @Service
 public class ProductoServiceImpl implements ProductoService {
+
+    private static final Logger log = LoggerFactory.getLogger(ProductoServiceImpl.class);
 
     @Autowired
     private ProductoRepository productoRepository;
@@ -49,11 +56,14 @@ public class ProductoServiceImpl implements ProductoService {
     @Override
     public Producto descontarStock(Long productoId, int cantidad) {
         Producto producto = productoRepository.findById(productoId)
-                .orElseThrow(() -> new IllegalArgumentException("El producto no existe"));
+                .orElseThrow(() -> new RecursoNoEncontradoException(Constantes.Mensajes.PRODUCTO_NO_EXISTE));
         if (producto.getStock() < cantidad) {
-            throw new IllegalArgumentException("Stock insuficiente");
+            log.warn("Intento de descontar {} unidades del producto {} con stock {}",
+                    cantidad, productoId, producto.getStock());
+            throw new StockInsuficienteException(productoId, cantidad, producto.getStock());
         }
         producto.setStock(producto.getStock() - cantidad);
+        log.info("Stock del producto {} descontado en {} unidades", productoId, cantidad);
         return productoRepository.save(producto);
     }
 }

@@ -1,8 +1,11 @@
 package com.minimarket.service.impl;
 
+import com.minimarket.common.Constantes;
 import com.minimarket.entity.Inventario;
 import com.minimarket.repository.InventarioRepository;
 import com.minimarket.service.InventarioService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -10,6 +13,8 @@ import java.util.List;
 
 @Service
 public class InventarioServiceImpl implements InventarioService {
+
+    private static final Logger log = LoggerFactory.getLogger(InventarioServiceImpl.class);
 
     @Autowired
     private InventarioRepository inventarioRepository;
@@ -62,12 +67,13 @@ public class InventarioServiceImpl implements InventarioService {
     @Override
     public Inventario registrarMovimiento(Inventario inventario) {
         if (!datosMovimientoValidos(inventario)) {
-            throw new IllegalArgumentException(
-                    "Datos de movimiento invalidos: tipoMovimiento y cantidad son obligatorios");
+            throw new IllegalArgumentException(Constantes.Mensajes.MOVIMIENTO_INVALIDO);
         }
         if (inventario.getProducto() == null) {
-            throw new IllegalArgumentException("El movimiento debe estar asociado a un producto");
+            throw new IllegalArgumentException(Constantes.Mensajes.MOVIMIENTO_SIN_PRODUCTO);
         }
+        log.info("Movimiento de inventario registrado: tipo={}, cantidad={}",
+                inventario.getTipoMovimiento(), inventario.getCantidad());
         return inventarioRepository.save(inventario);
     }
 }

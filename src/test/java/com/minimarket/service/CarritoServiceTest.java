@@ -3,6 +3,8 @@ package com.minimarket.service;
 import com.minimarket.entity.Carrito;
 import com.minimarket.entity.Producto;
 import com.minimarket.entity.Usuario;
+import com.minimarket.exception.RecursoNoEncontradoException;
+import com.minimarket.exception.StockInsuficienteException;
 import com.minimarket.repository.CarritoRepository;
 import com.minimarket.repository.ProductoRepository;
 import com.minimarket.service.impl.CarritoServiceImpl;
@@ -81,7 +83,7 @@ class CarritoServiceTest {
         carrito.setCantidad(10);         // pide 10
         when(productoRepository.findById(10L)).thenReturn(Optional.of(producto));
 
-        assertThrows(IllegalArgumentException.class, () -> carritoService.agregarProducto(carrito));
+        assertThrows(StockInsuficienteException.class, () -> carritoService.agregarProducto(carrito));
         verify(carritoRepository, never()).save(any(Carrito.class));
     }
 
@@ -90,7 +92,7 @@ class CarritoServiceTest {
     void agregarProducto_productoInexistente_lanzaExcepcion() {
         when(productoRepository.findById(10L)).thenReturn(Optional.empty());
 
-        assertThrows(IllegalArgumentException.class, () -> carritoService.agregarProducto(carrito));
+        assertThrows(RecursoNoEncontradoException.class, () -> carritoService.agregarProducto(carrito));
         verify(carritoRepository, never()).save(any(Carrito.class));
     }
 

@@ -1,6 +1,8 @@
 package com.minimarket.service;
 
 import com.minimarket.entity.Producto;
+import com.minimarket.exception.RecursoNoEncontradoException;
+import com.minimarket.exception.StockInsuficienteException;
 import com.minimarket.repository.ProductoRepository;
 import com.minimarket.service.impl.ProductoServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -81,7 +83,7 @@ class ProductoServiceTest {
     void descontarStock_sinStock_lanzaExcepcion() {
         when(productoRepository.findById(10L)).thenReturn(Optional.of(producto));
 
-        assertThrows(IllegalArgumentException.class, () -> productoService.descontarStock(10L, 50));
+        assertThrows(StockInsuficienteException.class, () -> productoService.descontarStock(10L, 50));
         verify(productoRepository, never()).save(any(Producto.class));
     }
 
@@ -89,7 +91,7 @@ class ProductoServiceTest {
     @DisplayName("descontarStock lanza excepcion si el producto no existe")
     void descontarStock_productoInexistente_lanzaExcepcion() {
         when(productoRepository.findById(99L)).thenReturn(Optional.empty());
-        assertThrows(IllegalArgumentException.class, () -> productoService.descontarStock(99L, 1));
+        assertThrows(RecursoNoEncontradoException.class, () -> productoService.descontarStock(99L, 1));
     }
 
     @Test

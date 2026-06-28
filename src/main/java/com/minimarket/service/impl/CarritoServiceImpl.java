@@ -1,10 +1,15 @@
 package com.minimarket.service.impl;
 
+import com.minimarket.common.Constantes;
 import com.minimarket.entity.Carrito;
 import com.minimarket.entity.Producto;
+import com.minimarket.exception.RecursoNoEncontradoException;
+import com.minimarket.exception.StockInsuficienteException;
 import com.minimarket.repository.CarritoRepository;
 import com.minimarket.repository.ProductoRepository;
 import com.minimarket.service.CarritoService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,6 +17,8 @@ import java.util.Optional;
 
 @Service
 public class CarritoServiceImpl implements CarritoService {
+
+    private static final Logger log = LoggerFactory.getLogger(CarritoServiceImpl.class);
 
     private final CarritoRepository carritoRepository;
     private final ProductoRepository productoRepository;
@@ -51,20 +58,23 @@ public class CarritoServiceImpl implements CarritoService {
     @Override
     public Carrito agregarProducto(Carrito carrito) {
         if (carrito.getProducto() == null || carrito.getProducto().getId() == null) {
-            throw new IllegalArgumentException("El carrito debe referenciar un producto valido");
+            throw new IllegalArgumentException(Constantes.Mensajes.CARRITO_SIN_PRODUCTO);
         }
         // Consulta el stock real del producto (dependencia simulada en pruebas).
         Optional<Producto> producto = productoRepository.findById(carrito.getProducto().getId());
         if (producto.isEmpty()) {
-            throw new IllegalArgumentException("El producto no existe");
+            throw new RecursoNoEncontradoException(Constantes.Mensajes.PRODUCTO_NO_EXISTE);
         }
         Integer cantidad = carrito.getCantidad();
         if (cantidad == null || cantidad <= 0) {
-            throw new IllegalArgumentException("La cantidad debe ser mayor que cero");
+            throw new IllegalArgumentException(Constantes.Mensajes.CANTIDAD_INVALIDA);
         }
         if (producto.get().getStock() < cantidad) {
-            throw new IllegalArgumentException("Stock insuficiente para agregar el producto al carrito");
+            log.warn("Stock insuficiente al agregar producto {} al carrito (pide {}, hay {})",
+                    producto.get().getId(), cantidad, producto.get().getStock());
+            throw new StockInsuficienteException(producto.get().getId(), cantidad, producto.get().getStock());
         }
+        log.info("Producto {} agregado al carrito (cantidad {})", producto.get().getId(), cantidad);
         return carritoRepository.save(carrito);
     }
 
