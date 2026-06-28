@@ -2,6 +2,7 @@ package com.minimarket.service;
 
 import com.minimarket.entity.Rol;
 import com.minimarket.entity.Usuario;
+import com.minimarket.exception.DatosInvalidosException;
 import com.minimarket.repository.UsuarioRepository;
 import com.minimarket.service.impl.UsuarioServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -62,6 +63,15 @@ class UsuarioServiceTest {
         assertNotEquals("secreto123", guardado.getPassword());
         verify(passwordEncoder).encode("secreto123");
         verify(usuarioRepository).save(usuario);
+    }
+
+    @Test
+    @DisplayName("registrar lanza excepcion y NO guarda si faltan datos obligatorios")
+    void registrar_datosInvalidos_lanzaExcepcion() {
+        usuario.setUsername("   "); // username en blanco
+
+        assertThrows(DatosInvalidosException.class, () -> usuarioService.registrar(usuario));
+        verify(usuarioRepository, never()).save(any(Usuario.class));
     }
 
     @Test

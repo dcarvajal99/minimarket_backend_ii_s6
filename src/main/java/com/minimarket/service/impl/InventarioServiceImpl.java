@@ -2,6 +2,7 @@ package com.minimarket.service.impl;
 
 import com.minimarket.common.Constantes;
 import com.minimarket.entity.Inventario;
+import com.minimarket.exception.DatosInvalidosException;
 import com.minimarket.repository.InventarioRepository;
 import com.minimarket.service.InventarioService;
 import org.slf4j.Logger;
@@ -67,10 +68,10 @@ public class InventarioServiceImpl implements InventarioService {
     @Override
     public Inventario registrarMovimiento(Inventario inventario) {
         if (!datosMovimientoValidos(inventario)) {
-            throw new IllegalArgumentException(Constantes.Mensajes.MOVIMIENTO_INVALIDO);
+            throw new DatosInvalidosException(Constantes.Mensajes.MOVIMIENTO_INVALIDO);
         }
         if (inventario.getProducto() == null) {
-            throw new IllegalArgumentException(Constantes.Mensajes.MOVIMIENTO_SIN_PRODUCTO);
+            throw new DatosInvalidosException(Constantes.Mensajes.MOVIMIENTO_SIN_PRODUCTO);
         }
         log.info("Movimiento de inventario registrado: tipo={}, cantidad={}",
                 inventario.getTipoMovimiento(), inventario.getCantidad());

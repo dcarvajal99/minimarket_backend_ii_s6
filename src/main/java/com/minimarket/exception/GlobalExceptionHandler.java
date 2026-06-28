@@ -59,7 +59,17 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(error);
     }
 
-    /** 400 - Argumentos ilegales del dominio (compatibilidad). */
+    /** 400 - Datos de dominio invalidos (excepcion de dominio). */
+    @ExceptionHandler(DatosInvalidosException.class)
+    public ResponseEntity<ErrorResponse> handleDatosInvalidos(DatosInvalidosException ex,
+                                                              HttpServletRequest request) {
+        log.warn("Datos invalidos: {}", ex.getMessage());
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(), "Bad Request", ex.getMessage(), request.getRequestURI());
+        return ResponseEntity.badRequest().body(error);
+    }
+
+    /** 400 - Argumentos ilegales (fallback de compatibilidad). */
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex,
                                                                HttpServletRequest request) {

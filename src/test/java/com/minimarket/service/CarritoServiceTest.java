@@ -3,6 +3,7 @@ package com.minimarket.service;
 import com.minimarket.entity.Carrito;
 import com.minimarket.entity.Producto;
 import com.minimarket.entity.Usuario;
+import com.minimarket.exception.DatosInvalidosException;
 import com.minimarket.exception.RecursoNoEncontradoException;
 import com.minimarket.exception.StockInsuficienteException;
 import com.minimarket.repository.CarritoRepository;
@@ -102,7 +103,7 @@ class CarritoServiceTest {
         carrito.setCantidad(0);
         when(productoRepository.findById(10L)).thenReturn(Optional.of(producto));
 
-        assertThrows(IllegalArgumentException.class, () -> carritoService.agregarProducto(carrito));
+        assertThrows(DatosInvalidosException.class, () -> carritoService.agregarProducto(carrito));
     }
 
     @Test

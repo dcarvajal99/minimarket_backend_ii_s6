@@ -3,6 +3,7 @@ package com.minimarket.service.impl;
 import com.minimarket.common.Constantes;
 import com.minimarket.entity.Carrito;
 import com.minimarket.entity.Producto;
+import com.minimarket.exception.DatosInvalidosException;
 import com.minimarket.exception.RecursoNoEncontradoException;
 import com.minimarket.exception.StockInsuficienteException;
 import com.minimarket.repository.CarritoRepository;
@@ -58,7 +59,7 @@ public class CarritoServiceImpl implements CarritoService {
     @Override
     public Carrito agregarProducto(Carrito carrito) {
         if (carrito.getProducto() == null || carrito.getProducto().getId() == null) {
-            throw new IllegalArgumentException(Constantes.Mensajes.CARRITO_SIN_PRODUCTO);
+            throw new DatosInvalidosException(Constantes.Mensajes.CARRITO_SIN_PRODUCTO);
         }
         // Consulta el stock real del producto (dependencia simulada en pruebas).
         Optional<Producto> producto = productoRepository.findById(carrito.getProducto().getId());
@@ -67,7 +68,7 @@ public class CarritoServiceImpl implements CarritoService {
         }
         Integer cantidad = carrito.getCantidad();
         if (cantidad == null || cantidad <= 0) {
-            throw new IllegalArgumentException(Constantes.Mensajes.CANTIDAD_INVALIDA);
+            throw new DatosInvalidosException(Constantes.Mensajes.CANTIDAD_INVALIDA);
         }
         if (producto.get().getStock() < cantidad) {
             log.warn("Stock insuficiente al agregar producto {} al carrito (pide {}, hay {})",

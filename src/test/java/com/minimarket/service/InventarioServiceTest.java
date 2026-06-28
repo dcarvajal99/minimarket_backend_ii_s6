@@ -2,6 +2,7 @@ package com.minimarket.service;
 
 import com.minimarket.entity.Inventario;
 import com.minimarket.entity.Producto;
+import com.minimarket.exception.DatosInvalidosException;
 import com.minimarket.repository.InventarioRepository;
 import com.minimarket.service.impl.InventarioServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -102,7 +103,7 @@ class InventarioServiceTest {
     void registrarMovimiento_datosInvalidos_lanzaExcepcion() {
         inventario.setTipoMovimiento(null);
 
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(DatosInvalidosException.class,
                 () -> inventarioService.registrarMovimiento(inventario));
         verify(inventarioRepository, never()).save(any(Inventario.class));
     }
@@ -112,7 +113,7 @@ class InventarioServiceTest {
     void registrarMovimiento_sinProducto_lanzaExcepcion() {
         inventario.setProducto(null);
 
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(DatosInvalidosException.class,
                 () -> inventarioService.registrarMovimiento(inventario));
         verify(inventarioRepository, never()).save(any(Inventario.class));
     }
