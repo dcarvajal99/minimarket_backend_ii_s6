@@ -38,9 +38,10 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        // Endpoints publicos: login, recurso de bienvenida y consola H2 (desarrollo).
+                        // Endpoints publicos: login, recurso de bienvenida, consola H2 y Swagger (desarrollo).
                         .requestMatchers("/api/auth/**", "/public/**").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
                         // El resto requiere autenticacion; el control fino por rol se aplica
                         // con @PreAuthorize en cada controlador.
                         .anyRequest().authenticated()
